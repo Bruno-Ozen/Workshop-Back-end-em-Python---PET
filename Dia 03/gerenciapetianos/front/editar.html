@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Petiano</title>
+  </head>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    .header {
+      background-color: #005fa3;
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .logo img {
+      width: 150px;
+    }
+
+    .user-profile {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px;
+      flex-wrap: wrap;
+    }
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: 400px;
+    }
+
+    .box {
+      background-color: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #005fa3;
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    form input,
+    form select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #005fa3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #004080;
+    }
+
+    .excluir-btn {
+      background-color: black;
+      color: white;
+    }
+
+    .excluir-btn:hover {
+      background-color: red;
+    }
+
+    .user-action {
+      font-size: 18px;
+      position: absolute;
+      left: 30px;
+      align-items: center;
+    }
+
+    .action-btn {
+      background-color: #fff;
+      color: #005fa3;
+      border: 1px solid #fff;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .action-btn:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+
+  <body>
+    <header class="header">
+      <div class="user-action">
+        <button class="action-btn" onclick="window.location.href='index.html'">
+          Voltar
+        </button>
+      </div>
+
+      <div class="logo">
+        <img src="logo.png" alt="PET Informática" />
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="section">
+        <div class="box">
+          <h2>Alterar Dados</h2>
+          <form>
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" />
+
+            <label for="nome-completo">Nome completo:</label>
+            <input type="text" id="nome-completo" />
+
+            <label for="cpf">CPF:</label>
+            <input type="text" id="cpf" disabled />
+
+            <label for="curso">Curso:</label>
+            <select id="curso">
+              <option value="Ciencia da Computacao">
+                Ciência da Computação
+              </option>
+              <option value="Engenharia de Software">
+                Engenharia de Software
+              </option>
+              <option value="Sistemas de Informação">
+                Sistemas de Informação
+              </option>
+              <option value="Engenharia da Computação">
+                Engenharia da Computação
+              </option>
+              <option value="Matemática">Matemática</option>
+              <option value="Estatística">Estatística</option>
+              <option value="Física">Física</option>
+              <option value="Química">Química</option>
+              <option value="Biologia">Biologia</option>
+              <option value="Engenharia Eletrônica">
+                Engenharia Eletrônica
+              </option>
+              <option value="Engenharia Mecânica">Engenharia Mecânica</option>
+              <option value="Engenharia Civil">Engenharia Civil</option>
+              <option value="Medicina">Medicina</option>
+              <option value="Enfermagem">Enfermagem</option>
+              <option value="Psicologia">Psicologia</option>
+              <option value="Administração">Administração</option>
+              <option value="Economia">Economia</option>
+              <option value="Direito">Direito</option>
+              <option value="Arquitetura e Urbanismo">
+                Arquitetura e Urbanismo
+              </option>
+              <option value="Letras">Letras</option>
+            </select>
+
+            <button type="button" id="salvar-dados" onclick="savePersonData()">
+              Salvar
+            </button>
+          </form>
+        </div>
+
+        <div class="box">
+          <h2>Excluir Conta</h2>
+          <form>
+            <label for="excluir-conta"
+              >Para excluir sua conta, digite no campo abaixo "Eu quero excluir
+              minha conta":</label
+            >
+            <input
+              type="text"
+              id="excluir-conta"
+              placeholder="Digite a frase"
+            />
+            <button
+              type="button"
+              id="excluir-btn"
+              class="excluir-btn"
+              onclick="deletePerson()"
+            >
+              Excluir Conta
+            </button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // Function to get the query parameter value from the URL
+      function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
+      }
+
+      // Extract the person ID from the query parameter
+      const personId = getQueryParam("id");
+
+      // Fetch person data from the API and populate the form
+      async function fetchPersonData() {
+        try {
+          const response = await fetch(
+            `http://127.0.0.1:8000/petiano/${personId}`
+          );
+          const person = await response.json();
+
+          // Populate the form fields with the fetched data
+          document.getElementById("email").value = person.Email;
+          document.getElementById("nome-completo").value = person.NomeCompleto;
+          document.getElementById("cpf").value = person.CPF;
+          document.getElementById("curso").value = person.Curso;
+        } catch (error) {
+          console.error("Error fetching person data:", error);
+        }
+      }
+
+      // Function to handle the save action
+      async function savePersonData() {
+        // Collect the values from the form fields
+        const Email = document.getElementById("email").value;
+        const NomeCompleto = document.getElementById("nome-completo").value;
+        const Curso = document.getElementById("curso").value;
+
+        // Create the person object to send to the backend
+        const updatedPerson = {
+          Email,
+          NomeCompleto,
+          Curso,
+        };
+
+        console.log(updatedPerson);
+
+        try {
+          // Send the PUT request to the API
+          const response = await fetch(
+            `http://127.0.0.1:8000/petiano/${personId}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(updatedPerson),
+            }
+          );
+
+          // Check if the request was successful
+          if (response.ok) {
+            alert("Dados atualizados com sucesso!");
+          } else {
+            const errorData = await response.json();
+            console.error("Erro ao atualizar:", errorData);
+            alert("Erro ao atualizar os dados.");
+          }
+        } catch (error) {
+          console.error("Erro na requisição:", error);
+          alert("Erro na comunicação com o servidor.");
+        }
+      }
+
+      async function deletePerson() {
+        const confirmText = document.getElementById("excluir-conta").value;
+
+        if (confirmText === "Eu quero excluir minha conta") {
+          try {
+            const response = await fetch(
+              `http://127.0.0.1:8000/petiano/${personId}`,
+              {
+                method: "DELETE",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+
+            if (response.ok) {
+              alert("Conta excluída com sucesso!");
+              window.location.href = "index.html";
+            }
+          } catch (error) {
+            console.error("Erro na requisição:", error);
+            alert("Erro na comunicação com o servidor.");
+          }
+        } else {
+          alert("Frase incorreta. Tente novamente.");
+        }
+      }
+      // Call the function to fetch and display the data
+      fetchPersonData();
+    </script>
+  </body>
+</html>

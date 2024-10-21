@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de Tarefas</title>
+    <style>
+        /* Estilos CSS */
+        body {
+            background-color: #e0f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        button {
+            width: 100%;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        #lista-tarefas {
+            margin-bottom: 20px;
+        }
+
+        .tarefa-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .checked {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        input[type="text"], button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            width: calc(100% - 22px);
+        }
+
+        button.edit-button {
+            background-color: #b3e5fc;
+            border: none;
+            color: #0288d1;
+            padding: 4px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+            text-align: center;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button.edit-button:hover {
+            background-color: #81d4fa;
+            color: white;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 12px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        label {
+            margin-top: 8px;
+            margin-left: 5px;
+        }
+
+        button:hover {
+            background-color: #29b6f6;
+            color: white;
+            cursor: pointer;
+        }
+
+        .logout-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: auto;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body onload="initPage()">
+    <div class="container">
+        <h1>Lista de Tarefas</h1>
+        <div id="lista-tarefas">
+            <!-- Itens da lista serão carregados aqui -->
+        </div>
+
+        <!-- Input e botão para adicionar tarefa -->
+        <div>
+            <input type="text" id="nova-tarefa-texto" placeholder="Nova tarefa" />
+            <button onclick="adicionarTarefa()">Adicionar Tarefa</button>
+        </div>
+
+        <!-- Botão para apagar tarefas selecionadas -->
+        <div>
+            <button onclick="removerTarefasSelecionadas()">Apagar tarefas selecionadas</button>
+        </div>
+
+        <!-- Botão para apagar todas as tarefas -->
+        <div>
+            <button onclick="removerTodasTarefas()">Apagar todas as tarefas</button>
+        </div>
+    </div>
+
+    <script>
+        function initPage() {
+            atualizarPagina();
+        }
+    
+        function atualizarPagina() {
+            fetch(`http://127.0.0.1:8000/tarefas`, {
+                method: 'GET',
+                mode: 'cors'
+            })
+            .then(response => response.json())
+            .then(tarefas => {
+                const listaTarefas = document.getElementById('lista-tarefas');
+                listaTarefas.innerHTML = ''; // Limpa a lista atual
+    
+                tarefas.forEach(tarefa => {
+                    const tarefaItem = document.createElement('div');
+                    tarefaItem.classList.add('tarefa-item');
+                    tarefaItem.setAttribute('data-id', tarefa.id); // Armazena o ID da tarefa
+    
+                    const botaoEditar = document.createElement('button');
+                    botaoEditar.classList.add('edit-button');
+                    botaoEditar.textContent = '✎';
+                    botaoEditar.onclick = function() { editarTarefa(this); };
+    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.onchange = function() { toggleCheck(this); };
+    
+                    const label = document.createElement('label');
+                    label.textContent = tarefa.descricao;
+    
+                    tarefaItem.appendChild(botaoEditar);
+                    tarefaItem.appendChild(checkbox);
+                    tarefaItem.appendChild(label);
+    
+                    listaTarefas.appendChild(tarefaItem);
+                });
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }
+    
+        function adicionarTarefa() {
+            const novaTarefaTexto = document.getElementById('nova-tarefa-texto').value;
+    
+            if (novaTarefaTexto.trim() !== "") {
+                fetch(`http://127.0.0.1:8000/tarefas`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ descricao: novaTarefaTexto })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    atualizarPagina(); // Atualiza a lista
+                    document.getElementById('nova-tarefa-texto').value = ''; // Limpa o campo
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                });
+            }
+        }
+    
+        function editarTarefa(botao) {
+            const tarefaItem = botao.parentElement;
+            const label = tarefaItem.querySelector('label');
+            const novoTexto = prompt('Edite a tarefa:', label.textContent);
+    
+            if (novoTexto !== null && novoTexto.trim() !== "") {
+                const tarefa_id = tarefaItem.getAttribute('data-id');
+                fetch(`http://127.0.0.1:8000/tarefas/${tarefa_id}`, {
+                    method: 'PUT',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        descricao: novoTexto
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    atualizarPagina(); // Atualiza a lista
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                });
+            }
+        }
+    
+        function removerTarefasSelecionadas() {
+            const itens = document.querySelectorAll('.tarefa-item');
+    
+            const promises = [];
+    
+            itens.forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                if (checkbox.checked) {
+                    const tarefa_id = item.getAttribute('data-id');
+                    const promise = fetch(`http://127.0.0.1:8000/tarefas/${tarefa_id}`, {
+                        method: 'DELETE',
+                        mode: 'cors'
+                    })
+                    .then(response => response.json())
+                    .catch(error => {
+                        console.error('Erro:', error);
+                    });
+    
+                    promises.push(promise);
+                }
+            });
+    
+            Promise.all(promises).then(() => {
+                atualizarPagina(); // Atualiza a lista após as remoções
+            });
+        }
+    
+        function removerTodasTarefas() {
+            fetch(`http://127.0.0.1:8000/tarefas`, {
+                method: 'DELETE',
+                mode: 'cors'
+            })
+            .then(response => response.json())
+            .then(data => {
+                atualizarPagina(); // Atualiza a lista
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        }
+    
+        function toggleCheck(checkbox) {
+            const label = checkbox.nextElementSibling;
+            if (checkbox.checked) {
+                label.classList.add('checked');
+            } else {
+                label.classList.remove('checked');
+            }
+        }
+    </script>        
+</body>
+</html>
